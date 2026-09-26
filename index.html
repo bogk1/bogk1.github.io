@@ -1,349 +1,192 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>ServerSide</title>
-<link rel="icon" href="assets2/avatar.png">
-<meta name="theme-color" content="#0d0817">
-<meta property="og:title" content="ServerSide">
-<meta property="og:description" content="bio">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  --p-soft:#e3d4ff;--p:#b79dff;--p-mid:#a78bfa;--p-deep:#7c4dff;--p-pink:#d9a8ff;
-  --ink:#0d0817;--text:#efe9fb;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden;background:#000;font-family:'Inter',system-ui,sans-serif;color:var(--text)}
-@media (pointer:fine){html,body,a,button,input{cursor:none}}
-
-#bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;
-  filter:blur(2px) brightness(.66) saturate(1.08);transform:scale(1.06)}
-
-.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
-  background:
-    radial-gradient(125% 100% at 50% 46%,transparent 24%,rgba(12,7,22,.55) 62%,rgba(9,5,16,.96) 100%),
-    linear-gradient(0deg,rgba(9,5,16,.8),transparent 30%,transparent 72%,rgba(9,5,16,.5))}
-
-.glow{position:fixed;border-radius:50%;filter:blur(72px);pointer-events:none;z-index:1;opacity:.55;mix-blend-mode:screen}
-.glow.g1{top:-130px;left:-110px;width:440px;height:440px;background:radial-gradient(circle,var(--p-mid),transparent 70%);animation:float1 18s ease-in-out infinite}
-.glow.g2{bottom:-150px;right:-130px;width:480px;height:480px;background:radial-gradient(circle,var(--p-pink),transparent 70%);animation:float2 22s ease-in-out infinite}
-@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
-@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,-30px)}}
-
-.char{position:fixed;z-index:4;pointer-events:none;bottom:0;opacity:0;transition:opacity .9s ease .2s;
-  filter:drop-shadow(0 8px 22px rgba(0,0,0,.55)) drop-shadow(0 0 18px rgba(167,139,250,.22))}
-.char img{display:block;width:100%;animation:bob 6s ease-in-out infinite}
-.char.left{left:clamp(-26px,2vw,42px);width:clamp(130px,17vw,235px)}
-.char.right{right:clamp(-26px,2vw,42px);width:clamp(120px,15vw,205px)}
-.char.right img{animation-delay:-3s}
-body.entered .char{opacity:.97}
-@keyframes bob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-12px) rotate(1deg)}}
-
-#sparkles{position:fixed;inset:0;z-index:3;pointer-events:none}
-
-.grain{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation:grain .5s steps(3) infinite}
-@keyframes grain{0%{transform:translate(0,0)}33%{transform:translate(-4px,3px)}66%{transform:translate(3px,-2px)}}
-
-.topbar{position:fixed;top:16px;left:16px;z-index:14;display:flex;align-items:center;gap:10px;opacity:0;transition:opacity .6s}
-body.entered .topbar{opacity:1}
-.sound{width:44px;height:44px;border-radius:50%;border:1px solid rgba(190,170,255,.24);
-  background:rgba(13,8,23,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  color:#e6ddfb;display:grid;place-items:center;transition:.2s;flex:0 0 auto}
-.sound:hover{background:rgba(150,120,250,.24);color:#fff;transform:scale(1.06)}
-.sound svg{width:21px;height:21px}
-.sound.off{color:#8d83a8}
-.volwrap{display:flex;align-items:center;height:44px;padding:0 14px 0 12px;border-radius:22px;
-  border:1px solid rgba(190,170,255,.2);background:rgba(13,8,23,.42);backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);opacity:0;transform:translateX(-8px);transition:.3s;pointer-events:none}
-.topbar:hover .volwrap{opacity:1;transform:translateX(0);pointer-events:auto}
-#vol{-webkit-appearance:none;appearance:none;width:90px;height:4px;border-radius:4px;
-  background:linear-gradient(90deg,var(--p-mid),rgba(255,255,255,.18));outline:none}
-#vol::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;
-  background:#f1eaff;box-shadow:0 0 8px rgba(167,139,250,.95);cursor:none}
-#vol::-moz-range-thumb{width:13px;height:13px;border:0;border-radius:50%;background:#f1eaff;box-shadow:0 0 8px rgba(167,139,250,.95)}
-
-.clock{position:fixed;top:22px;right:24px;z-index:14;font-variant-numeric:tabular-nums;
-  letter-spacing:3px;font-size:13.5px;color:rgba(224,214,250,.74);text-shadow:0 1px 10px rgba(0,0,0,.7);
-  opacity:0;transition:opacity .6s}
-body.entered .clock{opacity:1}
-
-.stage{position:fixed;inset:0;z-index:8;display:grid;place-items:center;padding:24px;perspective:1100px;
-  opacity:0;transform:translateY(14px) scale(.985);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
-.card{will-change:transform}
-body.entered .stage{opacity:1;transform:none}
-.card{position:relative;min-width:min(380px,90vw);padding:26px 40px 28px;border-radius:24px;
-  background:rgba(13,8,23,.36);backdrop-filter:blur(17px) saturate(1.2);
-  -webkit-backdrop-filter:blur(17px) saturate(1.2);border:1px solid transparent;background-clip:padding-box;
-  box-shadow:0 26px 74px rgba(0,0,0,.55),inset 0 0 50px rgba(150,110,250,.07);
-  text-align:center;display:flex;flex-direction:column;align-items:center;gap:13px}
-.card::before{content:"";position:absolute;inset:0;border-radius:24px;padding:1px;
-  background:linear-gradient(140deg,rgba(190,165,255,.55),rgba(217,168,255,.4),rgba(150,110,250,.15));
--webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
--webkit-mask-composite: xor;
-mask-composite: exclude;
-pointer-events: none;
-}
-.avatar{width:104px;height:104px;border-radius:50%;overflow:hidden;position:relative;
-  border:2px solid rgba(190,165,255,.7);box-shadow:0 0 26px rgba(150,110,250,.5),inset 0 0 0 4px rgba(13,8,23,.4);
-  background:linear-gradient(160deg,#3a2a66,#1a1030)}
-.avatar img{width:100%;height:100%;object-fit:cover;display:block}
-
-.views{display:inline-flex;align-items:center;gap:7px;color:#c9b6f5;font-size:14px;font-weight:500;letter-spacing:.3px}
-.views svg{width:17px;height:17px;fill:#c9b6f5}
-.views .dot{width:6px;height:6px;border-radius:50%;background:#b388ff;box-shadow:0 0 8px #b388ff;animation:pulse 1.8s ease-in-out infinite;margin-left:2px}
-@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
-
-.name{font-family:'Poppins',sans-serif;font-weight:600;font-size:clamp(28px,5vw,44px);line-height:1;
-  letter-spacing:.5px;background:linear-gradient(180deg,#f1e9ff,#b79dff 52%,#8b5cf6);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 0 16px rgba(160,125,255,.5));animation:glow 4.5s ease-in-out infinite}
-@keyframes glow{0%,100%{filter:drop-shadow(0 0 12px rgba(160,125,255,.42))}50%{filter:drop-shadow(0 0 22px rgba(185,155,255,.66))}}
-
-.eq{display:flex;align-items:flex-end;gap:4px;height:22px;margin-top:1px}
-.eq i{display:block;width:4px;height:100%;border-radius:3px;background:linear-gradient(#e7dbff,var(--p-deep));transform-origin:bottom;transform:scaleY(.2)}
-
-.links{display:flex;gap:20px;margin-top:6px}
-.link{position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;text-decoration:none}
-.link .ic{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;
-  background:rgba(255,255,255,.05);border:1px solid rgba(190,170,255,.18);color:#e9e2fb;transition:.25s cubic-bezier(.2,.7,.2,1)}
-.link .ic svg{width:24px;height:24px;fill:currentColor}
-.link:hover .ic{transform:translateY(-6px);background:rgba(150,120,250,.2);
-  border-color:rgba(185,155,255,.62);color:#efe6ff;box-shadow:0 14px 30px rgba(120,80,240,.36)}
-.link .meta{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#a695cf;letter-spacing:.2px}
-.link .meta svg{width:12px;height:12px;fill:#a695cf}
-.link .tip{position:absolute;top:-30px;left:50%;transform:translateX(-50%) translateY(4px);
-  padding:3px 9px;border-radius:8px;font-size:10.5px;letter-spacing:.4px;white-space:nowrap;
-  background:rgba(16,10,28,.92);border:1px solid rgba(190,170,255,.22);color:#efe6ff;opacity:0;transition:.2s;pointer-events:none}
-.link:hover .tip{opacity:1;transform:translateX(-50%) translateY(0)}
-
-#cursor{position:fixed;inset:0;z-index:9999;pointer-events:none}
-
-#enter{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;cursor:pointer;
-  background:rgba(11,6,20,.34);backdrop-filter:blur(15px) brightness(.7);-webkit-backdrop-filter:blur(15px) brightness(.7);
-  transition:opacity .7s ease}
-#enter.gone{opacity:0;pointer-events:none}
-.enter-in{display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
-.enter-av{width:96px;height:96px;border-radius:50%;overflow:hidden;position:relative;
-  border:2px solid rgba(190,165,255,.7);box-shadow:0 0 34px rgba(150,110,250,.6);
-  background:linear-gradient(160deg,#3a2a66,#1a1030);animation:breathe 2.4s ease-in-out infinite}
-.enter-av img{width:100%;height:100%;object-fit:cover;display:block}
-.enter-txt{font-family:'Poppins',sans-serif;font-weight:600;font-size:clamp(18px,3.6vw,26px);
-  letter-spacing:6px;text-transform:uppercase;color:#ece1ff;text-shadow:0 0 22px rgba(167,139,250,.75)}
-.enter-sub{font-size:11.5px;letter-spacing:4px;text-transform:uppercase;color:rgba(205,188,245,.6);
-  display:flex;align-items:center;gap:8px}
-.enter-sub b{font-weight:500}
-@keyframes breathe{0%,100%{transform:scale(1);box-shadow:0 0 26px rgba(150,110,250,.45)}50%{transform:scale(1.05);box-shadow:0 0 40px rgba(170,130,255,.75)}}
-
-@media (max-width:560px){
-  .card{padding:24px 26px 26px;gap:11px;min-width:auto}
-  .clock{font-size:12px;letter-spacing:2px}
-  .char.left{display:none}
-  .char.right{width:132px}
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>angelsolver ~ alyx</title>
+  <meta name="description" content="Content Creator - Valve news, findings and leaks.">
+  <meta property="og:site_name" content="angelsolver ~ alyx" />
+  <meta property="og:description" content="Content Creator - Valve news, findings and leaks.">
+  <meta property="og:title" content="angelsolver ~ alyx">
+  <meta property="twitter:card" content="summary">
+  <meta property="twitter:site" content="@gabefollower">
+  <meta property="og:image" content="https://gabefollower.com/logo.png">
+  <link rel="stylesheet" href="css/cs16.css" />
+  <link rel="stylesheet" href="css/index.css" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="canonical" href="https://gabefollower.com/">
 </head>
 <body>
-<video id="bg" autoplay muted loop playsinline preload="auto">
-  <source src="background.mp4" type="video/mp4">
-</video>
 
-<div class="vignette"></div>
-<div class="glow g1"></div>
-<div class="glow g2"></div>
-
-<canvas id="sparkles"></canvas>
-<div class="grain"></div>
-
-<div class="char left"><img src="assets2/pet1.png" alt=""></div>
-<div class="char right"><img src="assets2/pet2.png" alt=""></div>
-
-<div class="topbar">
-  <button class="sound" id="sound" aria-label="sound"></button>
-  <div class="volwrap"><input type="range" id="vol" min="0" max="100" value="18" aria-label="volume"></div>
-</div>
-<div class="clock" id="clock">00:00:00</div>
-
-<div class="stage">
-  <main class="card">
-    <div class="avatar" id="av"><img src="assets2/avatar.png" alt="" onerror="this.remove()"></div>
-    <div class="views">
-      <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9zm0-7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
-      <span id="viewCount">0</span><span class="dot"></span>
+  <!-- Loading Dialog -->
+  <div id="loading">
+    <div class="cs-dialog" style="min-width: 380px;">
+      <div class="heading">
+        <div class="wrapper">
+          <div style="margin-bottom: 8px;" class="icon"></div>
+          <p style="margin-bottom: 5px;" class="text">Loading...</p>
+        </div>
+      </div>
+      <div style="padding: 5px 12px 16px;">
+        <p style="color: #919f8a;">Loading website resources...</p>
+        <p style="margin-top: 5px;"></p>
+        <div style="display: flex;">
+          <div class="cs-progress-bar" id="progress-bar">
+            <div style="width: 0%" class="bars"></div>
+          </div>
+          <div class="loading-btns">
+            <button class="cs-btn">Cancel</button>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <h1 class="name">ServerSide</h1>
-
-    <div class="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-
-    <div class="links">
-      <a class="link" data-id="sc" href="https://soundcloud.com/serversided" target="_blank" rel="noopener">
-        <span class="tip">soundcloud</span>
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M1.175 12.225c-.051 0-.094.046-.101.1l-.233 2.154.233 2.105c.007.058.05.098.101.098.05 0 .09-.04.099-.098l.255-2.105-.27-2.154c0-.057-.045-.1-.09-.1m-.899.828c-.06 0-.091.037-.104.094L0 14.479l.165 1.308c.013.057.045.094.09.094s.089-.037.104-.094l.21-1.308-.21-1.32c-.015-.057-.045-.09-.09-.09m1.83-1.229c-.061 0-.12.045-.12.104l-.21 2.563.225 2.458c0 .06.045.104.119.104.061 0 .105-.045.121-.104l.254-2.458-.254-2.563c-.016-.06-.061-.104-.121-.104m.945-.089c-.075 0-.135.06-.149.135l-.193 2.64.21 2.544c.016.077.075.138.149.138.074 0 .135-.061.15-.15l.24-2.532-.24-2.623c-.015-.075-.075-.135-.166-.135m1.155.36c-.005-.09-.075-.149-.159-.149-.09 0-.158.06-.164.149l-.217 2.43.2 2.563c.005.09.075.149.159.149.074 0 .148-.06.148-.149l.227-2.563-.227-2.444m.809-1.709c-.101 0-.18.09-.18.181l-.21 3.957.187 2.563c0 .09.08.164.18.164.094 0 .174-.09.18-.18l.209-2.563-.209-3.972c-.008-.104-.088-.18-.18-.18m.959-.914c-.105 0-.195.09-.203.194l-.18 4.872.165 2.548c0 .12.09.209.195.209.104 0 .194-.089.21-.209l.193-2.548-.21-4.856c-.016-.12-.105-.21-.21-.21m.989-.449c-.121 0-.211.089-.225.209l-.165 5.275.165 2.52c.014.119.104.208.225.208.119 0 .225-.089.225-.209l.195-2.52-.196-5.275c0-.12-.105-.225-.225-.225m1.245.045c0-.135-.105-.24-.24-.24-.119 0-.24.105-.24.24l-.149 5.441.149 2.503c.016.135.121.24.256.24.119 0 .24-.105.24-.24l.164-2.503-.164-5.456m.749-.738c-.135 0-.255.119-.255.254l-.15 6.179.15 2.474c0 .15.12.255.255.255s.255-.12.255-.27l.135-2.474-.15-6.164c0-.15-.12-.27-.255-.27m1.005.166c-.164 0-.284.135-.284.285l-.103 6.013.135 2.443c0 .149.119.272.284.272.149 0 .284-.123.284-.288l.121-2.443-.135-6.013c0-.165-.135-.285-.285-.285m1.184-.945c-.045-.029-.105-.044-.165-.044s-.12.015-.165.044c-.09.054-.149.151-.149.262v.045l-.104 6.81.115 2.435.005.071c.016.061.046.12.09.165.054.044.115.074.193.074.061 0 .135-.029.18-.074.054-.045.084-.105.09-.18l.014-.181.121-2.391-.135-6.81c-.006-.12-.067-.21-.151-.262m6.96 3.624c-.39 0-.766.08-1.11.224-.225-2.625-2.43-4.68-5.13-4.68-.661 0-1.305.135-1.875.359-.225.09-.284.18-.284.36v9.275c0 .194.149.343.328.359h8.07c1.609 0 2.916-1.305 2.916-2.914 0-1.61-1.306-2.916-2.916-2.916"/></svg></span>
-        <span class="meta"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg><b class="cnt">0</b></span>
-      </a>
-
-      <a class="link" data-id="steam" href="https://steamcommunity.com/id/tiredofthesimplelife/" target="_blank" rel="noopener">
-        <span class="tip">steam</span>
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273-.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.252 0-2.265-1.014-2.265-2.265z"/></svg></span>
-        <span class="meta"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg><b class="cnt">0</b></span>
-      </a>
-
-      <a class="link" data-id="gh" href="https://github.com/bogk1" target="_blank" rel="noopener">
-        <span class="tip">github</span>
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.014 2.898-.014 3.293 0 .322.216.694.825.576C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span>
-        <span class="meta"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg><b class="cnt">0</b></span>
-      </a>
-
-      <a class="link" data-id="tg" href="https://t.me/furrylarper" target="_blank" rel="noopener">
-        <span class="tip">telegram</span>
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></span>
-        <span class="meta"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg><b class="cnt">0</b></span>
-      </a>
-    </div>
-  </main>
-</div>
-
-<canvas id="cursor"></canvas>
-
-<div id="enter">
-  <div class="enter-in">
-    <div class="enter-av"><img src="assets2/avatar.png" alt="" onerror="this.remove()"></div>
-    <div class="enter-txt">enter</div>
-    <div class="enter-sub"><b>click to view</b> · <b>♪ sound on</b></div>
   </div>
-</div>
 
-<script>
-const $=s=>document.querySelector(s);
-const NS='ssbio-'+(location.hostname.replace(/[^a-z0-9]/gi,'')||'local');
-const API='https://abacus.jasoncameron.dev';
-const ICON_SOUND='<svg viewBox="0 0 24 24" fill="none"><path d="M3 10v4h4l5 5V5L7 10H3z" fill="currentColor"/><path d="M16 8.6a4.6 4.6 0 0 1 0 6.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M18.8 6a8 8 0 0 1 0 12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
-const ICON_MUTE='<svg viewBox="0 0 24 24" fill="none"><path d="M3 10v4h4l5 5V5L7 10H3z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  <!-- Main Window -->
+  <div id="block" style="display: none;">
+    <div class="cs-dialog">
+      <div class="heading">
+        <div class="wrapper">
+          <div style="margin-bottom: 8px;" class="icon"></div>
+          <p style="margin-bottom: 5px;" class="text">angelsolver ~ alyx</p>
+        </div>
+        <button class="cs-btn close"></button>
+      </div>
 
-function tick(){const d=new Date(),p=n=>String(n).padStart(2,'0');
-  $('#clock').textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
-setInterval(tick,1000);tick();
+      <div class="cs-tabs">
+        <!-- Tab 1: Links -->
+        <input class="radiotab" name="tabs" tabindex="1" type="radio" id="tabone" checked="checked" />
+        <label class="label" for="tabone">Links</label>
+        <div class="panel" tabindex="1">
+          <p style="margin-top: 3px;"></p>
+          <button class="cs-btn"><a href="https://youtube.com/@gabe.follower?sub_confirmation=1" target="_blank">YouTube - EN</a></button>
+          <button class="cs-btn"><a href="https://youtube.com/gabefollower?sub_confirmation=1" target="_blank">YouTube - RU</a></button>
+        </div>
 
-function animateTo(el,to){
-  const from=Math.max(0,to-Math.min(60,Math.floor(to*0.25))),t0=performance.now(),dur=1300;
-  (function f(t){const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);
-    el.textContent=Math.floor(from+(to-from)*e).toLocaleString('en-US');
-    if(k<1)requestAnimationFrame(f);})(t0);
+        <!-- Tab 2: General Information -->
+        <input class="radiotab" name="tabs" tabindex="1" type="radio" id="tabtwo" />
+        <label class="label" for="tabtwo">General Information</label>
+        <div class="panel" tabindex="1">
+          <p>bogk1 ~ Creator angelsolver.lua big project from Ukraine</p>
+          <p>Thanks support ~ Valve Software</p>
+        </div>
+
+        <!-- Tab 3: News -->
+        <input class="radiotab" name="tabs" tabindex="1" type="radio" id="tabthree" />
+        <label class="label" for="tabthree">News</label>
+        <div class="panel news-panel" tabindex="1">
+          <div id="news-container">Loading news...</div>
+        </div>
+      </div>
+
+      <menu class="footer-btns">
+        <button class="cs-btn">OK</button>
+        <button class="cs-btn">Cancel</button>
+        <button class="cs-btn">Apply</button>
+      </menu>
+    </div>
+  </div>
+
+  <!-- Loading & Logic Script -->
+  <script>
+    window.onload = function () {
+      const progressBar = document.querySelector(".cs-progress-bar .bars");
+      const header = document.getElementById("block"); 
+      const loadingDiv = document.getElementById("loading");
+
+      let width = 10;
+      const maxWidth = 100;
+
+      progressBar.style.width = width + '%';
+
+      setTimeout(() => {
+        const progressInterval = setInterval(() => {
+          const step = Math.random() * 18;
+          width += step;
+
+          if (width > maxWidth) {
+            width = maxWidth;
+          }
+
+          progressBar.style.width = width + '%';
+
+          if (width === maxWidth) {
+            clearInterval(progressInterval);
+
+            setTimeout(() => {
+              document.getElementById("progress-bar").style.display = "none";
+              loadingDiv.style.display = "none";
+              header.style.display = "block";
+            }, 200);
+          }
+        }, 100); 
+      }, 500);
+
+      loadNews();
+      initCopyButtons();
+    };
+
+    // Load News from Pastebin via CORS Proxy
+async function loadNews() {
+  const container = document.getElementById("news-container");
+  try {
+    const res = await fetch("https://gist.githubusercontent.com/bogk1/d4ae91918de395ca7e0cad7cb3368597/raw/14160d0c92f106711865fdcb195e3e50f1a0da6f/gistfile1.txt");
+    
+    if (!res.ok) throw new Error("Network response was not ok");
+    
+    const data = await res.json();
+    
+    container.innerHTML = "";
+
+    data.forEach(item => {
+      const itemEl = document.createElement("a");
+      itemEl.href = item.url;
+      itemEl.target = "_blank";
+      itemEl.className = `news-item ${item.style === "full" ? "full-style" : "compact-style"}`;
+
+      if (item.style === "full") {
+        itemEl.innerHTML = `
+          <img class="news-banner" src="${item.imageUrl}" alt="${item.title}" />
+          <div class="news-overlay">
+            <span class="news-date">${item.date}</span>
+            <h3 class="news-title">${item.title}</h3>
+            <p class="news-body">${item.body}</p>
+          </div>
+        `;
+      } else {
+        itemEl.innerHTML = `
+          <img class="news-thumb" src="${item.imageUrl}" alt="${item.title}" />
+          <div class="news-content">
+            <span class="news-date">${item.date}</span>
+            <h3 class="news-title">${item.title}</h3>
+            <p class="news-body">${item.body}</p>
+          </div>
+        `;
+      }
+
+      container.appendChild(itemEl);
+    });
+  } catch (e) {
+    console.error("News loading error:", e);
+    container.innerHTML = '<span style="color: #ff6b6b;">Error loading news feed.</span>';
+  }
 }
-async function val(path,key){
-  const r=await fetch(API+'/'+path+'/'+NS+'/'+key,{cache:'no-store'});
-  if(!r.ok)throw 0;return (await r.json()).value;
-}
-val('hit','views')
-  .then(v=>{localStorage.ss_views=v;animateTo($('#viewCount'),v);})
-  .catch(()=>{const c=parseInt(localStorage.ss_views||'0',10);$('#viewCount').textContent=c.toLocaleString('en-US');});
 
-document.querySelectorAll('a.link').forEach(a=>{
-  const key='clk-'+a.dataset.id,el=a.querySelector('.cnt'),ck='ss_'+key;
-  val('get',key).then(v=>{el.textContent=v;localStorage[ck]=v;})
-    .catch(()=>{el.textContent=localStorage[ck]||'0';});
-  a.addEventListener('click',()=>{
-    const cur=parseInt((localStorage[ck]||'0'),10)+1;el.textContent=cur;localStorage[ck]=cur;
-    val('hit',key).then(v=>{el.textContent=v;localStorage[ck]=v;}).catch(()=>{});
-  });
-});
-
-const video=$('#bg'),soundBtn=$('#sound'),volEl=$('#vol');
-let actx,analyser,data,gain,audioReady=false,on=false,volume=0.18;
-soundBtn.innerHTML=ICON_SOUND;video.volume=volume;
-function initAudio(){
-  if(audioReady)return;
-  try{
-    const AC=window.AudioContext||window.webkitAudioContext;actx=new AC();
-    const src=actx.createMediaElementSource(video);
-    analyser=actx.createAnalyser();analyser.fftSize=64;data=new Uint8Array(analyser.frequencyBinCount);
-    gain=actx.createGain();gain.gain.value=0;
-    src.connect(analyser);src.connect(gain);gain.connect(actx.destination);
-    video.muted=false;audioReady=true;
-  }catch(e){}
-}
-function applyAudio(){if(gain)gain.gain.value=on?volume:0;video.volume=volume;}
-soundBtn.addEventListener('click',()=>{
-  initAudio();if(actx&&actx.state==='suspended')actx.resume();
-  on=!on;applyAudio();
-  soundBtn.classList.toggle('off',!on);soundBtn.innerHTML=on?ICON_SOUND:ICON_MUTE;
-  video.play().catch(()=>{});
-});
-volEl.addEventListener('input',()=>{volume=volEl.value/100;applyAudio();});
-
-const enter=$('#enter');
-function doEnter(){
-  if(document.body.classList.contains('entered'))return;
-  document.body.classList.add('entered');
-  enter.classList.add('gone');setTimeout(()=>{enter.style.display='none';},750);
-  initAudio();if(actx&&actx.state==='suspended')actx.resume();
-  on=true;applyAudio();
-  soundBtn.classList.remove('off');soundBtn.innerHTML=ICON_SOUND;
-  video.muted=false;video.play().catch(()=>{});
-}
-enter.addEventListener('click',doEnter);
-
-const bars=[...document.querySelectorAll('.eq i')];
-(function eq(t){
-  if(audioReady&&on){analyser.getByteFrequencyData(data);
-    bars.forEach((b,i)=>{const v=data[i*2+2]/255;b.style.transform='scaleY('+(0.14+v).toFixed(3)+')';});
-  }else{bars.forEach((b,i)=>{const v=Math.sin(t/260+i*0.7)*0.5+0.5;b.style.transform='scaleY('+(0.2+v*0.78).toFixed(3)+')';});}
-  requestAnimationFrame(eq);
-})(0);
-
-const sc=$('#sparkles'),sx=sc.getContext('2d');let SW,SH,ps=[];
-function sres(){SW=sc.width=innerWidth;SH=sc.height=innerHeight;
-  const n=Math.min(72,Math.floor(SW*SH/24000));ps=[];
-  for(let i=0;i<n;i++)ps.push({x:Math.random()*SW,y:Math.random()*SH,r:Math.random()*1.7+0.4,
-    s:Math.random()*0.35+0.08,tw:Math.random()*6.28,sp:Math.random()*0.035+0.008});}
-sres();addEventListener('resize',sres);
-(function sdraw(){sx.clearRect(0,0,SW,SH);
-  for(const p of ps){p.y-=p.s;if(p.y<-6){p.y=SH+6;p.x=Math.random()*SW;}p.tw+=p.sp;
-    const a=(Math.sin(p.tw)*0.5+0.5)*0.6;
-    sx.beginPath();sx.fillStyle='rgba(214,196,255,'+a.toFixed(2)+')';
-    sx.shadowBlur=6;sx.shadowColor='rgba(167,139,250,.8)';
-    sx.arc(p.x,p.y,p.r,0,6.283);sx.fill();}
-  requestAnimationFrame(sdraw);})();
-
-const cv=$('#cursor'),cx=cv.getContext('2d');let W,H;
-function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
-rs();addEventListener('resize',rs);
-let pts=[],mx=innerWidth/2,my=innerHeight/2,has=false;
-addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;has=true;
-  pts.push({x:mx,y:my});if(pts.length>24)pts.shift();});
-(function draw(){cx.clearRect(0,0,W,H);
-  if(has&&pts.length>1){cx.lineCap='round';cx.lineJoin='round';
-    for(let i=1;i<pts.length;i++){const p0=pts[i-1],p1=pts[i],a=i/pts.length,
-      dx=p1.x-p0.x,dy=p1.y-p0.y,len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len,
-      off=(i%2?1:-1)*Math.min(10,len*0.5),mxp=(p0.x+p1.x)/2+nx*off*a,myp=(p0.y+p1.y)/2+ny*off*a;
-      cx.beginPath();cx.strokeStyle='rgba(190,165,255,'+(a*0.85).toFixed(3)+')';
-      cx.lineWidth=a*3+0.4;cx.shadowBlur=12;cx.shadowColor='rgba(167,139,250,.85)';
-      cx.moveTo(p0.x,p0.y);cx.lineTo(mxp,myp);cx.lineTo(p1.x,p1.y);cx.stroke();}
-    cx.beginPath();cx.fillStyle='rgba(235,225,255,.95)';
-    cx.shadowBlur=18;cx.shadowColor='rgba(180,140,255,1)';
-    cx.arc(mx,my,4,0,6.283);cx.fill();}
-  requestAnimationFrame(draw);})();
-
-const card=$('.card'),cl=$('.char.left'),cr=$('.char.right');
-let ptx=0,pty=0,plx=0,ply=0;
-addEventListener('mousemove',e=>{ptx=e.clientX/innerWidth-0.5;pty=e.clientY/innerHeight-0.5;});
-(function par(){
-  plx+=(ptx-plx)*0.06;ply+=(pty-ply)*0.06;
-  card.style.transform='rotateX('+(-ply*5).toFixed(2)+'deg) rotateY('+(plx*5).toFixed(2)+'deg)';
-  const t='translate('+(plx*-16).toFixed(1)+'px,'+(ply*-9).toFixed(1)+'px)';
-  if(cl)cl.style.transform=t;if(cr)cr.style.transform=t;
-  requestAnimationFrame(par);
-})();
-document.addEventListener('visibilitychange',()=>{document.title=document.hidden?'welcome gordon':'half-life3';});
-
-video.play().catch(()=>{});
-</script>
+    // Copy to Clipboard logic
+    function initCopyButtons() {
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const textToCopy = this.parentElement.querySelector('.copy-text').innerText;
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            const oldText = this.innerText;
+            this.innerText = 'Copied!';
+            setTimeout(() => {
+              this.innerText = oldText;
+            }, 1500);
+          });
+        });
+      });
+    }
+  </script>
 </body>
 </html>
